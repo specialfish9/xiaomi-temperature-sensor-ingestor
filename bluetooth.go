@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -15,7 +16,7 @@ const (
 	serviceUUID = "0000181A"
 )
 
-func FetchData(adapter *bluetooth.Adapter, devices []string, out chan *Data) error {
+func FetchData(ctx context.Context, adapter *bluetooth.Adapter, devices []string, out chan *Data) error {
 	if err := adapter.Enable(); err != nil {
 		return fmt.Errorf("bluetooth: failed to enable adapter: %w", err)
 	}
@@ -36,6 +37,9 @@ func FetchData(adapter *bluetooth.Adapter, devices []string, out chan *Data) err
 
 	for {
 		select {
+		case <-ctx.Done():
+			adapter.StopScan()
+			return ctx.Err()
 		case err = <-errChan:
 			return err
 		case scanRes := <-scanResultChan:

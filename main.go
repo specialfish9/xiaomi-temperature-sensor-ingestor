@@ -19,7 +19,8 @@ func readData(dbConn driver.Conn, devices []string) error {
 
 	dataChan := make(chan *Data, len(devices))
 
-	err := FetchData(bluetooth.DefaultAdapter, devices, dataChan)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	err := FetchData(ctx, bluetooth.DefaultAdapter, devices, dataChan)
 	if err != nil {
 		return fmt.Errorf("cannot fetch data: %w", err)
 	}
