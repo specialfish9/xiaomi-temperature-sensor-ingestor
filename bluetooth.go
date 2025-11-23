@@ -65,9 +65,14 @@ func FetchData(ctx context.Context, adapter *bluetooth.Adapter, devices []string
 
 func scanCallback(resultChan chan<- bluetooth.ScanResult, devices []string) func(*bluetooth.Adapter, bluetooth.ScanResult) {
 	return func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
+		found := make(map[string]bool)
+		for _, d := range devices {
+			found[d] = false
+		}
 		for _, d := range devices {
 			slog.Debug("scanned device", "address", device.Address.String())
-			if isTarget(&device, d) {
+			if isTarget(&device, d) && !found[d] {
+				found[d] = true
 				slog.Info("target device found", "address", device.Address.String())
 				resultChan <- device
 				return
