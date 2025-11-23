@@ -25,7 +25,12 @@ func FetchData(ctx context.Context, adapter *bluetooth.Adapter, devices []string
 	scanResultChan := make(chan bluetooth.ScanResult)
 
 	go func(errChan chan<- error) {
-		err := adapter.Scan(scanCallback(scanResultChan, devices))
+		found := make(map[string]bool)
+		for _, d := range devices {
+			found[d] = false
+		}
+
+		err := adapter.Scan(scanCallback(scanResultChan, devices, found))
 		if err != nil {
 			errChan <- err
 		}
@@ -63,12 +68,8 @@ func FetchData(ctx context.Context, adapter *bluetooth.Adapter, devices []string
 	}
 }
 
-func scanCallback(resultChan chan<- bluetooth.ScanResult, devices []string) func(*bluetooth.Adapter, bluetooth.ScanResult) {
+func scanCallback(resultChan chan<- bluetooth.ScanResult, devices []string, found map[string]bool) func(*bluetooth.Adapter, bluetooth.ScanResult) {
 	return func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
-		found := make(map[string]bool)
-		for _, d := range devices {
-			found[d] = false
-		}
 		for _, d := range devices {
 			slog.Debug("scanned device", "address", device.Address.String())
 			if isTarget(&device, d) && !found[d] {
