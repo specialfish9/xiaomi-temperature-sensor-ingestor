@@ -19,7 +19,7 @@ func parseData(address string, b []byte) (*Data, error) {
 		return nil, errors.New("malformed data bytes")
 	}
 
-	temp := binary.BigEndian.Uint16(b[6:8])
+	temp := int16(binary.BigEndian.Uint16(b[6:8]))
 	hum := uint8(b[8])
 	bat := uint8(b[9])
 	vol := binary.BigEndian.Uint16(b[10:12])
