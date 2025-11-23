@@ -75,7 +75,6 @@ func scanCallback(resultChan chan<- bluetooth.ScanResult, devices []string) func
 				found[d] = true
 				slog.Info("target device found", "address", device.Address.String())
 				resultChan <- device
-				return
 			}
 		}
 	}
