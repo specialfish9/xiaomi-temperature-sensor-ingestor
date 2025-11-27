@@ -30,9 +30,16 @@ func FetchData(ctx context.Context, adapter *bluetooth.Adapter, devices []string
 			found[d] = false
 		}
 
+	scan:
 		err := adapter.Scan(scanCallback(scanResultChan, devices, found))
 		if err != nil {
-			errChan <- err
+			if strings.Contains(err.Error(), "a scan is already in progress") {
+				slog.Warn("scan already in progress, stopping existing scan and retrying")
+				adapter.StopScan()
+				goto scan
+			} else {
+				errChan <- err
+			}
 		}
 	}(errChan)
 
